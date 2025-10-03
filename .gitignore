@@ -2,3 +2,4 @@
 config/user_config.ini
 logs/app.log
 /VNTextPatch
+/.qoder
