@@ -11,7 +11,7 @@ from .command_executor import CommandExecutor, ExecutionResult
 class MsgToolExecutor(CommandExecutor):
     """Msg-tool专用执行器"""
     
-    def __init__(self, msgtool_dir: str = "."):
+    def __init__(self, msgtool_dir: str = "msg_tool"):
         """
         初始化MsgTool执行器
         
@@ -25,7 +25,13 @@ class MsgToolExecutor(CommandExecutor):
     def check_tool_available(self) -> bool:
         """检查msg-tool工具是否可用"""
         tool_path = os.path.join(self.msgtool_dir, self.executable)
-        return os.path.exists(tool_path) and os.access(tool_path, os.X_OK)
+        available = os.path.exists(tool_path) and os.access(tool_path, os.X_OK)
+        
+        # 输出检查结果用于调试
+        if not available:
+            print(f"工具检查: {tool_path} {'not found' if not os.path.exists(tool_path) else 'not executable'}")
+        
+        return available
     
     def get_supported_engines(self) -> List[str]:
         """获取支持的引擎列表
@@ -38,16 +44,16 @@ class MsgToolExecutor(CommandExecutor):
             # Artemis系列
             "artemis - AST文件",
             "artemis-asb - ASB/IET文件", 
-            "artemis-txt - 通用文本脚本",
+            "artemis-txt - Artemis Engine TXT",
             # BGI/Ethornell系列
-            "bgi/ethornell - 通用脚本",
-            "bgi-bp/ethornell-bp - BP脚本",
+            "bgi - BGI通用脚本",
+            "bgi-bp - BP脚本",
             # CatSystem2系列
             "cat-system - CST场景脚本",
             "cat-system-cstl - I18N文件",
             # 其他引擎
             "circus - MES脚本文件",
-            "entis-gls - XML脚本",
+            "entis-gls - Entis GLS engine XML脚本",
             "escude - BIN脚本文件",
             "ex-hibit - RLD脚本文件",
             "favorite - DAT脚本文件",
@@ -97,7 +103,6 @@ class MsgToolExecutor(CommandExecutor):
         cmd_parts = [
             f".\\{self.executable}",
             "export", 
-            "--output-format", "json",
             "--recursive"
         ]
         
@@ -111,6 +116,10 @@ class MsgToolExecutor(CommandExecutor):
         
         # 构建完整命令
         command = " ".join(cmd_parts)
+        
+        # 输出命令用于调试
+        if output_callback:
+            output_callback(f"正在执行: {command}")
         
         return self.execute(command, timeout=300, output_callback=output_callback)
     
@@ -162,6 +171,10 @@ class MsgToolExecutor(CommandExecutor):
         
         # 构建完整命令
         command = " ".join(cmd_parts)
+        
+        # 输出命令用于调试
+        if output_callback:
+            output_callback(f"正在执行: {command}")
         
         return self.execute(command, timeout=600, output_callback=output_callback)
     

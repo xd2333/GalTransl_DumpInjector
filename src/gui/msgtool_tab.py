@@ -45,7 +45,7 @@ class MsgToolTab:
         self.intro_frame = ttk.Frame(self.frame)
         self.intro_label = ttk.Label(
             self.intro_frame,
-            text="msg-tool是一个强大的多引擎脚本处理工具，支持更广泛的游戏引擎类型",
+            text="msg-tool是一个强大的多引擎脚本处理工具，作者lifegpc",
             foreground="blue",
             cursor="hand2",
             wraplength=800
@@ -341,14 +341,30 @@ class MsgToolTab:
             self.status_var.set("正在提取文本...")
             self.output_display.clear()
             
-            # 执行提取
-            result = self.processor.extract_text(
+            def on_completion(result):
+                """异步完成回调"""
+                # 使用after方法在主线程中更新GUI
+                self.frame.after(0, self._handle_extract_completion, result)
+            
+            # 异步执行提取
+            self.processor.extract_text_async(
                 script_folder,
                 json_folder,
                 engine if engine != "自动检测" else None,
-                self.output_display.append_text
+                self.output_display.append_line,  # 使用append_line确保换行
+                on_completion
             )
             
+        except Exception as e:
+            self.status_var.set("提取异常")
+            error_msg = f"提取过程异常: {str(e)}"
+            self.output_display.append_text(f"\n✗ {error_msg}")
+            messagebox.showerror("异常", error_msg)
+            self._set_processing_state(False)
+    
+    def _handle_extract_completion(self, result):
+        """处理提取完成结果"""
+        try:
             # 显示结果
             if result.success:
                 self.status_var.set("提取完成")
@@ -362,7 +378,7 @@ class MsgToolTab:
         
         except Exception as e:
             self.status_var.set("提取异常")
-            error_msg = f"提取过程异常: {str(e)}"
+            error_msg = f"处理结果异常: {str(e)}"
             self.output_display.append_text(f"\n✗ {error_msg}")
             messagebox.showerror("异常", error_msg)
         
@@ -393,8 +409,13 @@ class MsgToolTab:
             self.status_var.set("正在注入文本...")
             self.output_display.clear()
             
-            # 执行注入
-            result = self.processor.inject_text(
+            def on_completion(result):
+                """异步完成回调"""
+                # 使用after方法在主线程中更新GUI
+                self.frame.after(0, self._handle_inject_completion, result)
+            
+            # 异步执行注入
+            self.processor.inject_text_async(
                 script_folder,
                 json_folder,
                 output_folder,
@@ -402,9 +423,20 @@ class MsgToolTab:
                 use_gbk,
                 sjis_replacement,
                 sjis_chars,
-                self.output_display.append_text
+                self.output_display.append_line,  # 使用append_line确保换行
+                on_completion
             )
             
+        except Exception as e:
+            self.status_var.set("注入异常")
+            error_msg = f"注入过程异常: {str(e)}"
+            self.output_display.append_text(f"\n✗ {error_msg}")
+            messagebox.showerror("异常", error_msg)
+            self._set_processing_state(False)
+    
+    def _handle_inject_completion(self, result):
+        """处理注入完成结果"""
+        try:
             # 显示结果
             if result.success:
                 self.status_var.set("注入完成")
@@ -424,7 +456,7 @@ class MsgToolTab:
         
         except Exception as e:
             self.status_var.set("注入异常")
-            error_msg = f"注入过程异常: {str(e)}"
+            error_msg = f"处理结果异常: {str(e)}"
             self.output_display.append_text(f"\n✗ {error_msg}")
             messagebox.showerror("异常", error_msg)
         
@@ -435,7 +467,7 @@ class MsgToolTab:
         """取消当前操作"""
         if self._is_processing:
             try:
-                self.processor.executor.cancel()
+                self.processor.cancel_current_task()
                 self.status_var.set("操作已取消")
                 self.output_display.append_text("\n⚠ 操作被用户取消")
             except Exception as e:

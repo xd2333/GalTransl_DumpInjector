@@ -4,11 +4,12 @@ Msg-tool处理器
 """
 
 import os
+import threading
 from typing import Optional, Callable, Dict, Any
 from dataclasses import dataclass
 
 from ..utils.msgtool_executor import MsgToolExecutor
-from ..utils.command_executor import ExecutionResult, ExecutionStatus
+from ..utils.command_executor import ExecutionResult, ExecutionStatus, AsyncCommandExecutor
 from ..utils.validators import MsgToolValidator, ValidationSummary
 from ..core.sjis_handler import SJISHandler, SJISExtBinaryHandler
 from ..core.file_operations import FileOperations
@@ -27,7 +28,7 @@ class MsgToolProcessResult:
 class MsgToolProcessor:
     """Msg-tool处理器"""
     
-    def __init__(self, msgtool_dir: str = "."):
+    def __init__(self, msgtool_dir: str = "msg_tool"):
         """
         初始化Msg-tool处理器
         
@@ -37,6 +38,8 @@ class MsgToolProcessor:
         self.msgtool_dir = msgtool_dir
         self.executor = MsgToolExecutor(msgtool_dir)
         self.sjis_handler = SJISHandler()
+        self.async_executor = AsyncCommandExecutor()
+        self._current_task_id = None
     
     def is_tool_available(self) -> bool:
         """检查msg-tool工具是否可用"""
@@ -255,3 +258,123 @@ class MsgToolProcessor:
                 success=False,
                 message=f"注入过程异常: {str(e)}"
             )
+    
+    def extract_text_async(
+        self,
+        script_folder: str,
+        json_folder: str,
+        engine: Optional[str] = None,
+        output_callback: Optional[Callable[[str], None]] = None,
+        completion_callback: Optional[Callable[[MsgToolProcessResult], None]] = None
+    ) -> str:
+        """异步提取脚本文本到JSON
+        
+        Args:
+            script_folder: 日文脚本文件夹路径
+            json_folder: JSON保存文件夹路径
+            engine: 指定的引擎（可选）
+            output_callback: 实时输出回调函数
+            completion_callback: 完成回调函数
+        
+        Returns:
+            str: 任务ID
+        """
+        import uuid
+        task_id = f"extract_{uuid.uuid4().hex[:8]}"
+        self._current_task_id = task_id
+        
+        def run_extract():
+            """在后台线程中执行提取"""
+            try:
+                result = self.extract_text(
+                    script_folder, json_folder, engine, output_callback
+                )
+                if completion_callback:
+                    completion_callback(result)
+            except Exception as e:
+                error_result = MsgToolProcessResult(
+                    success=False,
+                    message=f"异步提取异常: {str(e)}"
+                )
+                if completion_callback:
+                    completion_callback(error_result)
+            finally:
+                if self._current_task_id == task_id:
+                    self._current_task_id = None
+        
+        thread = threading.Thread(target=run_extract, daemon=True)
+        thread.start()
+        
+        return task_id
+    
+    def inject_text_async(
+        self,
+        script_folder: str,
+        json_folder: str,
+        output_folder: str,
+        engine: Optional[str] = None,
+        use_gbk_encoding: bool = False,
+        sjis_replacement: bool = False,
+        sjis_replace_chars: str = "",
+        output_callback: Optional[Callable[[str], None]] = None,
+        completion_callback: Optional[Callable[[MsgToolProcessResult], None]] = None
+    ) -> str:
+        """异步注入JSON文本回脚本
+        
+        Args:
+            script_folder: 日文脚本文件夹路径
+            json_folder: 译文JSON文件夹路径
+            output_folder: 输出脚本文件夹路径
+            engine: 指定的引擎（可选）
+            use_gbk_encoding: 是否使用GBK编码注入（cp932）
+            sjis_replacement: 是否启用SJIS替换模式
+            sjis_replace_chars: SJIS替换字符
+            output_callback: 实时输出回调函数
+            completion_callback: 完成回调函数
+        
+        Returns:
+            str: 任务ID
+        """
+        import uuid
+        task_id = f"inject_{uuid.uuid4().hex[:8]}"
+        self._current_task_id = task_id
+        
+        def run_inject():
+            """在后台线程中执行注入"""
+            try:
+                result = self.inject_text(
+                    script_folder, json_folder, output_folder,
+                    engine, use_gbk_encoding, sjis_replacement,
+                    sjis_replace_chars, output_callback
+                )
+                if completion_callback:
+                    completion_callback(result)
+            except Exception as e:
+                error_result = MsgToolProcessResult(
+                    success=False,
+                    message=f"异步注入异常: {str(e)}"
+                )
+                if completion_callback:
+                    completion_callback(error_result)
+            finally:
+                if self._current_task_id == task_id:
+                    self._current_task_id = None
+        
+        thread = threading.Thread(target=run_inject, daemon=True)
+        thread.start()
+        
+        return task_id
+    
+    def cancel_current_task(self):
+        """取消当前任务"""
+        if self._current_task_id:
+            try:
+                self.executor.cancel()
+            except Exception as e:
+                print(f"取消任务失败: {e}")
+            finally:
+                self._current_task_id = None
+    
+    def is_running(self) -> bool:
+        """检查是否有任务在运行"""
+        return self._current_task_id is not None
