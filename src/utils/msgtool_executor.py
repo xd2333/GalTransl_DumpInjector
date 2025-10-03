@@ -20,7 +20,7 @@ class MsgToolExecutor(CommandExecutor):
         """
         super().__init__(working_dir=msgtool_dir)
         self.msgtool_dir = msgtool_dir
-        self.executable = "msg-tool.exe"
+        self.executable = "msg_tool.exe"
     
     def check_tool_available(self) -> bool:
         """检查msg-tool工具是否可用"""
