@@ -7,10 +7,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Optional
 
-from ..widgets.file_selector import FileSelector
-from ..widgets.output_display import RealTimeOutputDisplay
-from ...core.vntext_processor import VNTextProcessor
-from ...models.config import Config
+from .widgets.file_selector import FileSelector
+from .widgets.output_display import RealTimeOutputDisplay
+from ..core.vntext_processor import VNTextProcessor
+from ..models.config import Config
 
 
 class VNTextTab:

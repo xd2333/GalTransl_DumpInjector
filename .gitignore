@@ -1,0 +1,3 @@
+*.pyc
+config/user_config.ini
+logs/app.log
