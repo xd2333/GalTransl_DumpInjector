@@ -40,6 +40,19 @@ class VNTextTab:
     
     def _create_widgets(self):
         """创建界面组件"""
+        # VNTextPatch介绍
+        self.intro_frame = ttk.Frame(self.frame)
+        self.intro_label = ttk.Label(
+            self.intro_frame,
+            text="VNTextPatch是由arcusmaximus开发的多引擎脚本提取注入工具",
+            foreground="blue",
+            cursor="hand2",
+            wraplength=800
+        )
+        
+        # 绑定点击事件打开链接
+        self.intro_label.bind("<Button-1>", self._open_vntextpatch_link)
+        
         # 文件选择器
         self.script_jp_selector = FileSelector(
             self.frame,
@@ -155,6 +168,12 @@ class VNTextTab:
     def _setup_layout(self):
         """设置布局"""
         row = 0
+        
+        # VNTextPatch介绍布局
+        self.intro_frame.grid(row=row, column=0, columnspan=3, 
+                             sticky="ew", padx=5, pady=5)
+        self.intro_label.pack(pady=5)
+        row += 1
         
         # 文件选择器布局
         self.script_jp_selector.grid(row=row, column=0, columnspan=3, 
@@ -454,3 +473,8 @@ class VNTextTab:
         
         self.output_display.stop_output_monitoring()
         self._save_config()
+    
+    def _open_vntextpatch_link(self, event):
+        """打开VNTextPatch链接"""
+        import webbrowser
+        webbrowser.open("https://github.com/arcusmaximus/VNTranslationTools")
