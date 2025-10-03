@@ -120,14 +120,14 @@ class MainWindow:
             geometry = self.root.geometry()
             size_part = geometry.split('+')[0]  # 提取尺寸部分
             self.config.window_size = size_part
-            
-            # 清理标签页资源
-            for tab in self.tabs.values():
-                if hasattr(tab, 'cleanup'):
-                    tab.cleanup()
-            
             # 保存配置
             self.config.save_config()
+            # # 清理标签页资源
+            # for tab in self.tabs.values():
+            #     if hasattr(tab, 'cleanup'):
+            #         tab.cleanup()
+            
+
             
         except Exception as e:
             print(f"保存配置时出错: {e}")

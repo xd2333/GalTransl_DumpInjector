@@ -304,7 +304,7 @@ class RegexTab:
         
         self.config.sjis_replacement = self.sjis_replace_var.get()
         
-        self.config.save_config()
+        #self.config.save_config()
     
     def _extract_text(self):
         """提取文本"""
