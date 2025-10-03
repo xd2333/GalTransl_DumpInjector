@@ -44,7 +44,7 @@ class FileSelector:
         self.frame = ttk.Frame(self.parent)
         
         # 标签
-        self.label = ttk.Label(self.frame, text=self.label_text)
+        self.label = ttk.Label(self.frame, text=self.label_text, width=17, anchor="e")
         
         # 路径输入框
         self.path_var = tk.StringVar()
