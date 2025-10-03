@@ -10,6 +10,7 @@ from ttkbootstrap import Style
 
 from .vntext_tab import VNTextTab
 from .regex_tab import RegexTab
+from .msgtool_tab import MsgToolTab
 from ..models.config import Config
 from .. import __version__
 
@@ -95,12 +96,16 @@ class MainWindow:
         # VNTextPatch模式标签页
         self.vntext_tab = VNTextTab(self.notebook, self.config)
         
+        # msg-tool模式标签页
+        self.msgtool_tab = MsgToolTab(self.notebook, self.config)
+        
         # 正则表达式模式标签页
         self.regex_tab = RegexTab(self.notebook, self.config)
         
         # 存储标签页引用
         self.tabs = {
             "vntext": self.vntext_tab,
+            "msgtool": self.msgtool_tab,
             "regex": self.regex_tab
         }
     
@@ -140,6 +145,9 @@ class MainWindow:
         # 检查VNTextPatch工具状态
         self._check_vntextpatch_status()
         
+        # 检查msg-tool工具状态
+        self._check_msgtool_status()
+        
         # 启动主循环
         self.root.mainloop()
     
@@ -152,6 +160,15 @@ class MainWindow:
         except Exception as e:
             print(f"检查VNTextPatch状态时出错: {e}")
     
+    def _check_msgtool_status(self):
+        """检查msg-tool工具状态"""
+        try:
+            # 检查msg-tool工具是否可用
+            if hasattr(self.msgtool_tab, 'check_msgtool_status'):
+                self.msgtool_tab.check_msgtool_status()
+        except Exception as e:
+            print(f"检查msg-tool状态时出错: {e}")
+    
     def get_current_tab(self) -> str:
         """获取当前活动的标签页"""
         try:
@@ -160,6 +177,8 @@ class MainWindow:
             
             if "VNTextPatch" in tab_text:
                 return "vntext"
+            elif "msg-tool" in tab_text:
+                return "msgtool"
             elif "正则表达式" in tab_text:
                 return "regex"
             else:
@@ -171,7 +190,8 @@ class MainWindow:
         """切换到指定标签页"""
         tab_map = {
             "vntext": 0,
-            "regex": 1
+            "msgtool": 1,
+            "regex": 2
         }
         
         if tab_name in tab_map:
@@ -185,6 +205,7 @@ class MainWindow:
 
 这是一个用于游戏翻译文本提取和注入的工具，支持：
 • VNTextPatch模式 - 使用VNTextPatch工具进行提取和注入
+• msg-tool模式 - 使用msg-tool工具支持更多游戏引擎
 • 正则表达式模式 - 使用自定义正则表达式进行处理
 • SJIS字符替换 - 支持汉字到日文汉字的映射替换
 • 多种编码支持 - 支持UTF-8、GBK、SJIS等编码
@@ -205,27 +226,37 @@ class MainWindow:
 VNTextPatch模式：
 1. 选择日文脚本文件夹和JSON保存文件夹
 2. 选择引擎（或保持自动判断）
-3. 点击"提取脚本到JSON"
+3. 点击“提取脚本到JSON”
 4. 翻译JSON文件
 5. 选择译文JSON文件夹和输出文件夹
 6. 根据需要启用GBK编码或SJIS替换模式
-7. 点击"注入JSON回脚本"
+7. 点击“注入JSON回脚本”
+
+msg-tool模式：
+1. 选择日文脚本文件夹和JSON保存文件夹
+2. 选择引擎（或保持自动检测）
+3. 点击“提取脚本到JSON”
+4. 翻译JSON文件
+5. 选择译文JSON文件夹和输出文件夹
+6. 根据需要启用GBK编码或SJIS替换模式
+7. 点击“注入JSON回脚本”
 
 正则表达式模式：
 1. 选择日文脚本文件夹和JSON保存文件夹
 2. 输入正文提取和人名提取的正则表达式
 3. 选择日文脚本编码
-4. 点击"提取脚本到JSON"
+4. 点击“提取脚本到JSON”
 5. 翻译JSON文件
 6. 选择译文JSON文件夹和输出文件夹
 7. 选择中文脚本编码
 8. 根据需要启用SJIS替换模式
-9. 点击"注入JSON回脚本"
+9. 点击“注入JSON回脚本”
 
 提示：
 • 正则表达式必须包含捕获组 () 来提取内容
-• 建议先用"测试正则表达式"功能验证正则
+• 建议先用“测试正则表达式”功能验证正则
 • SJIS替换模式适用于需要汉字映射的场景
+• msg-tool支持更多游戏引擎，包括Artemis、BGI、CatSystem2等
 """
         
         messagebox.showinfo("帮助", help_text)
@@ -245,6 +276,8 @@ VNTextPatch模式：
         menubar.add_cascade(label="工具", menu=tools_menu)
         tools_menu.add_command(label="检查VNTextPatch状态", 
                               command=self._check_vntextpatch_status)
+        tools_menu.add_command(label="检查msg-tool状态", 
+                              command=self._check_msgtool_status)
         
         # 帮助菜单
         help_menu = tk.Menu(menubar, tearoff=0)
