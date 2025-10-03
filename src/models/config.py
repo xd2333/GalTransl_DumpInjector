@@ -150,3 +150,68 @@ class Config:
     @gbk_encoding.setter
     def gbk_encoding(self, value: bool):
         self.set_bool("Advanced", "gbk_encoding", value)
+    
+    # Msg-tool专用配置项
+    @property
+    def msgtool_script_jp_folder(self) -> str:
+        return self.get("MsgToolPaths", "msgtool_script_jp_folder")
+    
+    @msgtool_script_jp_folder.setter
+    def msgtool_script_jp_folder(self, value: str):
+        self.set("MsgToolPaths", "msgtool_script_jp_folder", value)
+    
+    @property
+    def msgtool_json_jp_folder(self) -> str:
+        return self.get("MsgToolPaths", "msgtool_json_jp_folder")
+    
+    @msgtool_json_jp_folder.setter
+    def msgtool_json_jp_folder(self, value: str):
+        self.set("MsgToolPaths", "msgtool_json_jp_folder", value)
+    
+    @property
+    def msgtool_json_cn_folder(self) -> str:
+        return self.get("MsgToolPaths", "msgtool_json_cn_folder")
+    
+    @msgtool_json_cn_folder.setter
+    def msgtool_json_cn_folder(self, value: str):
+        self.set("MsgToolPaths", "msgtool_json_cn_folder", value)
+    
+    @property
+    def msgtool_script_cn_folder(self) -> str:
+        return self.get("MsgToolPaths", "msgtool_script_cn_folder")
+    
+    @msgtool_script_cn_folder.setter
+    def msgtool_script_cn_folder(self, value: str):
+        self.set("MsgToolPaths", "msgtool_script_cn_folder", value)
+    
+    @property
+    def msgtool_selected_engine(self) -> str:
+        return self.get("MsgToolSettings", "msgtool_selected_engine", "自动检测")
+    
+    @msgtool_selected_engine.setter
+    def msgtool_selected_engine(self, value: str):
+        self.set("MsgToolSettings", "msgtool_selected_engine", value)
+    
+    @property
+    def msgtool_use_gbk_encoding(self) -> bool:
+        return self.get_bool("MsgToolSettings", "msgtool_use_gbk_encoding")
+    
+    @msgtool_use_gbk_encoding.setter
+    def msgtool_use_gbk_encoding(self, value: bool):
+        self.set_bool("MsgToolSettings", "msgtool_use_gbk_encoding", value)
+    
+    @property
+    def msgtool_sjis_replacement(self) -> bool:
+        return self.get_bool("MsgToolSettings", "msgtool_sjis_replacement")
+    
+    @msgtool_sjis_replacement.setter
+    def msgtool_sjis_replacement(self, value: bool):
+        self.set_bool("MsgToolSettings", "msgtool_sjis_replacement", value)
+    
+    @property
+    def msgtool_sjis_chars(self) -> str:
+        return self.get("MsgToolSettings", "msgtool_sjis_chars")
+    
+    @msgtool_sjis_chars.setter
+    def msgtool_sjis_chars(self, value: str):
+        self.set("MsgToolSettings", "msgtool_sjis_chars", value)

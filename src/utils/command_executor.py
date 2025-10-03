@@ -68,8 +68,10 @@ class CommandExecutor:
                 shell=True,
                 cwd=self.working_dir,
                 text=True,
-                bufsize=1,
-                universal_newlines=True
+                bufsize=0,  # 禁用缓冲，防止输出卡死
+                universal_newlines=True,
+                encoding='utf-8',  # 明确指定UTF-8编码
+                errors='replace'   # 遇到编码错误时替换为占位符
             )
             
             stdout_lines = []
@@ -79,11 +81,13 @@ class CommandExecutor:
             if output_callback:
                 stdout_thread = threading.Thread(
                     target=self._read_output_stream,
-                    args=(self._process.stdout, stdout_lines, output_callback)
+                    args=(self._process.stdout, stdout_lines, output_callback),
+                    daemon=True  # 设为守护线程
                 )
                 stderr_thread = threading.Thread(
                     target=self._read_output_stream,
-                    args=(self._process.stderr, stderr_lines, None)
+                    args=(self._process.stderr, stderr_lines, output_callback),  # stderr也使用callback
+                    daemon=True  # 设为守护线程
                 )
                 
                 stdout_thread.start()
@@ -104,9 +108,9 @@ class CommandExecutor:
                         error_message="命令执行超时"
                     )
                 
-                # 等待输出线程完成
-                stdout_thread.join(timeout=1)
-                stderr_thread.join(timeout=1)
+                # 等待输出线程完成，给更多时间读取缓冲区
+                stdout_thread.join(timeout=3)
+                stderr_thread.join(timeout=3)
             else:
                 # 简单执行，不需要实时输出
                 try:
@@ -163,15 +167,29 @@ class CommandExecutor:
     ):
         """读取输出流"""
         try:
-            for line in iter(stream.readline, ''):
+            while True:
                 if self._cancelled:
                     break
-                
+                    
+                line = stream.readline()
+                if not line:  # EOF
+                    break
+                    
                 lines_list.append(line)
                 if callback:
+                    # 实时回调，去除换行符
                     callback(line.rstrip())
-        except Exception:
-            pass  # 忽略读取异常
+                    
+        except Exception as e:
+            # 记录异常但不影响主流程
+            if callback:
+                callback(f"读取输出异常: {str(e)}")
+        finally:
+            # 确保流被关闭
+            try:
+                stream.close()
+            except Exception:
+                pass
     
     def cancel(self):
         """取消执行"""

@@ -3,3 +3,4 @@ config/user_config.ini
 logs/app.log
 /VNTextPatch
 /.qoder
+/msg_tool

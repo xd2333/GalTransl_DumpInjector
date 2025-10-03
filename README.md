@@ -8,9 +8,16 @@ GalTransl DumpInjector 是一个用于游戏翻译文本提取和注入的GUI工
 
 ## ✨ 特性
 
-### 🔧 双模式支持
+### 🔧 三模式支持
 - **VNTextPatch模式** - 使用VNTextPatch工具进行自动提取和注入
+- **msg-tool模式** - 使用msg-tool工具支持更广泛的游戏引擎类型 
 - **正则表达式模式** - 使用自定义正则表达式灵活处理各种脚本格式
+
+### 🎮 msg-tool引擎支持
+- **Artemis系列**: artemis (AST), artemis-asb (ASB/IET), artemis-txt (通用文本)
+- **BGI/Ethornell系列**: bgi/ethornell (通用脚本), bgi-bp (特殊BP脚本)
+- **CatSystem2系列**: cat-system (CST场景脚本), cat-system-cstl (I18N文件)
+- **其他引擎**: circus, entis-gls, escude, ex-hibit, favorite, innocent-grey, kirikiri
 
 ### 🌐 多编码支持
 - UTF-8、GBK、SJIS等多种字符编码
@@ -38,6 +45,10 @@ GalTransl DumpInjector 是一个用于游戏翻译文本提取和注入的GUI工
 - Python 3.7+
 - tkinter (通常随Python安装)
 
+### 外部工具要求
+- **VNTextPatch**: 用于VNTextPatch模式，必须放置在项目根目录的VNTextPatch文件夹中
+- **msg-tool**: 用于msg-tool模式，必须将msg-tool.exe放置在项目根目录中
+
 ### 依赖安装
 ```bash
 pip install -r requirements.txt
@@ -60,7 +71,7 @@ python src/main.py
    - 选择日文脚本文件夹
    - 选择JSON保存文件夹
    - 选择引擎（可选，默认自动判断）
-   - 点击"提取脚本到JSON"
+   - 点击“提取脚本到JSON”
 
 2. **文本注入**
    - 选择译文JSON文件夹
@@ -68,7 +79,23 @@ python src/main.py
    - 配置编码选项：
      - GBK编码注入
      - SJIS替换模式
-   - 点击"注入JSON回脚本"
+   - 点击“注入JSON回脚本”
+
+### msg-tool模式
+
+1. **文本提取**
+   - 选择日文脚本文件夹
+   - 选择JSON保存文件夹
+   - 选择引擎（支持Artemis、BGI、CatSystem2等）
+   - 点击“提取脚本到JSON”
+
+2. **文本注入**
+   - 选择译文JSON文件夹
+   - 选择输出脚本文件夹
+   - 配置选项：
+     - GBK编码注入 (--encoding cp932)
+     - SJIS替换模式
+   - 点击“注入JSON回脚本”
 
 ### 正则表达式模式
 

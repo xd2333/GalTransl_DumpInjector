@@ -408,6 +408,90 @@ class RegexModeValidator:
         return results
 
 
+class MsgToolValidator:
+    """Msg-tool模式验证器"""
+    
+    @staticmethod
+    def validate_extract_params(script_folder: str, json_folder: str, engine: str) -> List[ValidationResult]:
+        """验证提取参数"""
+        results = []
+        
+        # 验证脚本文件夹
+        script_result = PathValidator.validate_folder_path(script_folder, must_exist=True)
+        script_result.field_name = "script_folder"
+        results.append(script_result)
+        
+        # 验证JSON保存文件夹
+        json_result = PathValidator.validate_folder_path(json_folder, must_exist=False)
+        json_result.field_name = "json_folder"
+        results.append(json_result)
+        
+        # 验证引擎选择
+        if engine and engine != "自动检测":
+            valid_engines = [
+                'artemis', 'artemis-asb', 'artemis-txt',
+                'bgi/ethornell', 'bgi-bp/ethornell-bp',
+                'cat-system', 'cat-system-cstl',
+                'circus', 'entis-gls', 'escude', 'ex-hibit',
+                'favorite', 'innocent-grey', 'kirikiri'
+            ]
+            engine_type = engine.split(" - ")[0].strip()
+            if engine_type not in valid_engines:
+                results.append(ValidationResult(
+                    is_valid=False,
+                    level=ValidationLevel.WARNING,
+                    message=f"未知引擎: {engine}",
+                    field_name="engine"
+                ))
+        
+        return results
+    
+    @staticmethod
+    def validate_inject_params(
+        script_folder: str, 
+        json_folder: str, 
+        output_folder: str, 
+        engine: str
+    ) -> List[ValidationResult]:
+        """验证注入参数"""
+        results = []
+        
+        # 验证脚本文件夹
+        script_result = PathValidator.validate_folder_path(script_folder, must_exist=True)
+        script_result.field_name = "script_folder"
+        results.append(script_result)
+        
+        # 验证JSON文件夹
+        json_result = PathValidator.validate_folder_path(json_folder, must_exist=True)
+        json_result.field_name = "json_folder"
+        results.append(json_result)
+        
+        # 验证输出文件夹
+        output_result = PathValidator.validate_folder_path(output_folder, must_exist=False)
+        output_result.field_name = "output_folder"
+        results.append(output_result)
+        
+        # 验证引擎选择
+        if engine and engine != "自动检测":
+            valid_engines = [
+                'artemis', 'artemis-asb', 'artemis-txt',
+                'bgi/ethornell', 'bgi-bp/ethornell-bp',
+                'cat-system', 'cat-system-cstl',
+                'circus', 'entis-gls', 'escude', 'ex-hibit',
+                'favorite', 'innocent-grey', 'kirikiri'
+            ]
+            engine_type = engine.split(" - ")[0].strip()
+            if engine_type not in valid_engines:
+                results.append(ValidationResult(
+                    is_valid=False,
+                    level=ValidationLevel.WARNING,
+                    message=f"未知引擎: {engine}",
+                    field_name="engine"
+                ))
+        
+        return results
+
+
 class ValidationSummary:
     """验证结果汇总"""
     
