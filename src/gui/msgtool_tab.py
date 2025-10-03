@@ -45,7 +45,7 @@ class MsgToolTab:
         self.intro_frame = ttk.Frame(self.frame)
         self.intro_label = ttk.Label(
             self.intro_frame,
-            text="msg-tool是一个强大的多引擎脚本处理工具，作者lifegpc",
+            text="msg-tool是由lifegpc开发的多引擎脚本提取注入工具",
             foreground="blue",
             cursor="hand2",
             wraplength=800
@@ -216,17 +216,21 @@ class MsgToolTab:
                                      sticky="ew", padx=5, pady=5)
         
         # GBK编码选项
-        self.gbk_encoding_check.grid(row=0, column=0, padx=5, pady=2, sticky="w")
+        self.gbk_encoding_check.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        
+        # 注入按钮
+        self.inject_button.grid(row=0, column=2, padx=5, pady=5, sticky="e")
         
         # SJIS替换选项
         self.sjis_replace_frame.grid(row=1, column=0, columnspan=3, 
-                                   sticky="ew", padx=5, pady=2)
-        self.sjis_replace_check.grid(row=0, column=0, padx=5, pady=2, sticky="w")
-        self.sjis_char_entry.grid(row=0, column=1, padx=5, pady=2, sticky="w")
-        self.sjis_char_label.grid(row=0, column=2, padx=5, pady=2, sticky="w")
+                                   sticky="ew", padx=5, pady=5)
+        self.sjis_replace_check.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.sjis_char_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.sjis_char_label.grid(row=1, column=1, padx=5, pady=5, sticky="w")
         
-        # 注入按钮
-        self.inject_button.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        # 配置注入选项框架的列权重
+        self.inject_options_frame.columnconfigure(1, weight=1)
+        self.sjis_replace_frame.columnconfigure(1, weight=1)
         
         row += 1
         
