@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
 from typing import Optional
+from platform import system
 
 from .widgets.file_selector import FileSelector
 from .widgets.output_display import RealTimeOutputDisplay
@@ -94,6 +95,19 @@ class MsgToolTab:
             state="readonly",
             width=30
         )
+
+        self.encoding_frame = ttk.Frame(self.engine_frame)
+        self.encoding_label = ttk.Label(self.encoding_frame, text="原始文件编码")
+        self.encoding_var = tk.StringVar(value="默认编码")
+        self.encoding_combo = ttk.Combobox(
+            self.encoding_frame,
+            textvariable=self.encoding_var,
+            values=self.processor.get_encodings(),
+            state="normal" if system() == "Windows" else "readonly",
+            validate='focusout',
+            validatecommand=(self.frame.register(self._validate_encoding), '%P')
+        )
+
         
         # 提取按钮
         self.extract_button = ttk.Button(
@@ -105,12 +119,17 @@ class MsgToolTab:
         # 注入选项
         self.inject_options_frame = ttk.Frame(self.frame)
         
-        # GBK编码选项
-        self.gbk_encoding_var = tk.BooleanVar(value=False)
-        self.gbk_encoding_check = ttk.Checkbutton(
-            self.inject_options_frame,
-            text="GBK编码注入 (--encoding cp932)",
-            variable=self.gbk_encoding_var
+        self.patched_encoding_frame = ttk.Frame(self.inject_options_frame)
+        self.patched_encoding_label = ttk.Label(self.patched_encoding_frame, text="注入时编码")
+        # 注入时编码选项
+        self.patched_encoding_var = tk.StringVar(value='默认编码')
+        self.patched_encoding = ttk.Combobox(
+            self.patched_encoding_frame,
+            textvariable=self.patched_encoding_var,
+            values=self.processor.get_patched_encodings(),
+            state="normal" if system() == "Windows" else "readonly",
+            validate='focusout',
+            validatecommand=(self.frame.register(self._validate_patched_encoding), '%P')
         )
         
         # SJIS替换选项
@@ -193,11 +212,14 @@ class MsgToolTab:
         row += 1
         
         # 引擎选择和提取按钮
-        self.engine_frame.grid(row=row, column=0, columnspan=3, 
+        self.engine_frame.grid(row=row, column=0, columnspan=4, 
                              sticky="ew", padx=5, pady=5)
         self.engine_label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
         self.engine_combo.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        self.extract_button.grid(row=0, column=2, padx=5, pady=5, sticky="e")
+        self.encoding_frame.grid(row=0, column=2, sticky="w", padx=5, pady=5)
+        self.encoding_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.encoding_combo.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        self.extract_button.grid(row=0, column=3, padx=5, pady=5, sticky="e")
         
         # 配置引擎框架的列权重
         self.engine_frame.columnconfigure(1, weight=1)
@@ -215,8 +237,11 @@ class MsgToolTab:
         self.inject_options_frame.grid(row=row, column=0, columnspan=3, 
                                      sticky="ew", padx=5, pady=5)
         
-        # GBK编码选项
-        self.gbk_encoding_check.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        # 注入时编码选项
+        self.patched_encoding_frame.grid(row=0, column=0, columnspan=2, 
+                                       sticky="ew", padx=5, pady=5)
+        self.patched_encoding_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.patched_encoding.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         
         # 注入按钮
         self.inject_button.grid(row=0, column=2, padx=5, pady=5, sticky="e")
@@ -252,6 +277,22 @@ class MsgToolTab:
         # 配置主框架的列权重
         self.frame.columnconfigure(0, weight=1)
     
+    def _validate_encoding(self, proposed_value):
+        """验证编码输入"""
+        encodings = self.processor.get_encodings()
+        if system() == "Windows":
+            return self.processor.get_code_page(proposed_value) or proposed_value in encodings
+        else:
+            return proposed_value in encodings
+    
+    def _validate_patched_encoding(self, proposed_value):
+        """验证注入编码输入"""
+        patched_encodings = self.processor.get_patched_encodings()
+        if system() == "Windows":
+            return self.processor.get_code_page(proposed_value) or proposed_value in patched_encodings
+        else:
+            return proposed_value in patched_encodings
+    
     def _open_msgtool_link(self, event):
         """打开msg-tool链接"""
         try:
@@ -279,7 +320,8 @@ class MsgToolTab:
             self.engine_var.set(self.config.msgtool_selected_engine)
             
             # 加载选项配置
-            self.gbk_encoding_var.set(self.config.msgtool_use_gbk_encoding)
+            self.encoding_var.set(self.config.msgtool_encoding)
+            self.patched_encoding_var.set(self.config.msgtool_patched_encoding)
             self.sjis_replace_var.set(self.config.msgtool_sjis_replacement)
             self.sjis_char_var.set(self.config.msgtool_sjis_chars)
             
@@ -302,7 +344,8 @@ class MsgToolTab:
             self.config.msgtool_selected_engine = self.engine_var.get()
             
             # 保存选项配置
-            self.config.msgtool_use_gbk_encoding = self.gbk_encoding_var.get()
+            self.config.msgtool_encoding = self.encoding_var.get()
+            self.config.msgtool_patched_encoding = self.patched_encoding_var.get()
             self.config.msgtool_sjis_replacement = self.sjis_replace_var.get()
             self.config.msgtool_sjis_chars = self.sjis_char_var.get()
             
@@ -335,6 +378,7 @@ class MsgToolTab:
             script_folder = self.script_jp_selector.get_path()
             json_folder = self.json_jp_selector.get_path()
             engine = self.engine_var.get()
+            encoding = self.encoding_var.get()
             
             if not script_folder or not json_folder:
                 messagebox.showerror("错误", "请选择脚本文件夹和JSON保存文件夹")
@@ -355,6 +399,7 @@ class MsgToolTab:
                 script_folder,
                 json_folder,
                 engine if engine != "自动检测" else None,
+                encoding,
                 self.output_display.append_line,  # 使用append_line确保换行
                 on_completion
             )
@@ -400,7 +445,8 @@ class MsgToolTab:
             json_folder = self.json_cn_selector.get_path()
             output_folder = self.script_cn_selector.get_path()
             engine = self.engine_var.get()
-            use_gbk = self.gbk_encoding_var.get()
+            encoding = self.encoding_var.get()
+            patched_encoding = self.patched_encoding_var.get()
             sjis_replacement = self.sjis_replace_var.get()
             sjis_chars = self.sjis_char_var.get()
             
@@ -424,7 +470,8 @@ class MsgToolTab:
                 json_folder,
                 output_folder,
                 engine if engine != "自动检测" else None,
-                use_gbk,
+                encoding,
+                patched_encoding,
                 sjis_replacement,
                 sjis_chars,
                 self.output_display.append_line,  # 使用append_line确保换行

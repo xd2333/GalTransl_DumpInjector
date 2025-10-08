@@ -191,14 +191,22 @@ class Config:
     @msgtool_selected_engine.setter
     def msgtool_selected_engine(self, value: str):
         self.set("MsgToolSettings", "msgtool_selected_engine", value)
+
+    @property
+    def msgtool_encoding(self) -> str:
+        return self.get("MsgToolSettings", "msgtool_encoding", "默认编码")
+
+    @msgtool_encoding.setter
+    def msgtool_encoding(self, value: str):
+        self.set("MsgToolSettings", "msgtool_encoding", value)
     
     @property
-    def msgtool_use_gbk_encoding(self) -> bool:
-        return self.get_bool("MsgToolSettings", "msgtool_use_gbk_encoding")
+    def msgtool_patched_encoding(self) -> str:
+        return self.get("MsgToolSettings", "msgtool_patched_encoding", "默认编码")
     
-    @msgtool_use_gbk_encoding.setter
-    def msgtool_use_gbk_encoding(self, value: bool):
-        self.set_bool("MsgToolSettings", "msgtool_use_gbk_encoding", value)
+    @msgtool_patched_encoding.setter
+    def msgtool_patched_encoding(self, value: str):
+        self.set("MsgToolSettings", "msgtool_patched_encoding", value)
     
     @property
     def msgtool_sjis_replacement(self) -> bool:

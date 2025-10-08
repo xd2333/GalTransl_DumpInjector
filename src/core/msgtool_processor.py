@@ -49,6 +49,25 @@ class MsgToolProcessor:
         """获取支持的引擎列表"""
         return self.executor.get_supported_engines()
     
+    def get_encodings(self) -> list:
+        """获取支持的编码列表"""
+        return self.executor.get_encodings()
+    
+    def get_patched_encodings(self) -> list:
+        """获取支持的注入编码列表"""
+        return self.executor.get_patched_encodings()
+
+    def get_code_page(self, encoding: str) -> Optional[int]:
+        """根据编码名称获取对应的代码页
+        
+        Args:
+            encoding: 编码名称
+            
+        Returns:
+            对应的代码页，找不到时返回None
+        """
+        return self.executor.get_code_page(encoding)
+    
     def get_tool_info(self) -> Dict[str, Any]:
         """获取工具信息"""
         info = {
@@ -76,6 +95,7 @@ class MsgToolProcessor:
         script_folder: str,
         json_folder: str,
         engine: Optional[str] = None,
+        encoding: Optional[str] = None,
         output_callback: Optional[Callable[[str], None]] = None
     ) -> MsgToolProcessResult:
         """提取脚本文本到JSON
@@ -84,6 +104,7 @@ class MsgToolProcessor:
             script_folder: 日文脚本文件夹路径
             json_folder: JSON保存文件夹路径
             engine: 指定的引擎（可选）
+            encoding: 指定的文件编码（可选）
             output_callback: 实时输出回调函数
         
         Returns:
@@ -114,7 +135,7 @@ class MsgToolProcessor:
             
             # 执行提取命令
             result = self.executor.extract(
-                script_folder, json_folder, engine, output_callback
+                script_folder, json_folder, engine, encoding, output_callback
             )
             
             # 分析执行结果
@@ -150,7 +171,8 @@ class MsgToolProcessor:
         json_folder: str,
         output_folder: str,
         engine: Optional[str] = None,
-        use_gbk_encoding: bool = False,
+        encoding: Optional[str] = None,
+        patched_encoding: Optional[str] = None,
         sjis_replacement: bool = False,
         sjis_replace_chars: str = "",
         output_callback: Optional[Callable[[str], None]] = None
@@ -162,7 +184,8 @@ class MsgToolProcessor:
             json_folder: 译文JSON文件夹路径
             output_folder: 输出脚本文件夹路径
             engine: 指定的引擎（可选）
-            use_gbk_encoding: 是否使用GBK编码注入（cp932）
+            encoding: 指定的文件编码（可选）
+            patched_encoding: 指定的注入编码（可选）
             sjis_replacement: 是否启用SJIS替换模式
             sjis_replace_chars: SJIS替换字符
             output_callback: 实时输出回调函数
@@ -220,7 +243,7 @@ class MsgToolProcessor:
             # 执行注入命令
             result = self.executor.inject(
                 script_folder, actual_json_folder, output_folder, 
-                engine, use_gbk_encoding, output_callback
+                engine, encoding, patched_encoding, output_callback
             )
             
             # 检查sjis_ext.bin文件
@@ -264,6 +287,7 @@ class MsgToolProcessor:
         script_folder: str,
         json_folder: str,
         engine: Optional[str] = None,
+        encoding: Optional[str] = None,
         output_callback: Optional[Callable[[str], None]] = None,
         completion_callback: Optional[Callable[[MsgToolProcessResult], None]] = None
     ) -> str:
@@ -273,6 +297,7 @@ class MsgToolProcessor:
             script_folder: 日文脚本文件夹路径
             json_folder: JSON保存文件夹路径
             engine: 指定的引擎（可选）
+            encoding: 指定的文件编码（可选）
             output_callback: 实时输出回调函数
             completion_callback: 完成回调函数
         
@@ -287,7 +312,7 @@ class MsgToolProcessor:
             """在后台线程中执行提取"""
             try:
                 result = self.extract_text(
-                    script_folder, json_folder, engine, output_callback
+                    script_folder, json_folder, engine, encoding, output_callback
                 )
                 if completion_callback:
                     completion_callback(result)
@@ -313,7 +338,8 @@ class MsgToolProcessor:
         json_folder: str,
         output_folder: str,
         engine: Optional[str] = None,
-        use_gbk_encoding: bool = False,
+        encoding: Optional[str] = None,
+        patched_encoding: Optional[str] = None,
         sjis_replacement: bool = False,
         sjis_replace_chars: str = "",
         output_callback: Optional[Callable[[str], None]] = None,
@@ -326,7 +352,8 @@ class MsgToolProcessor:
             json_folder: 译文JSON文件夹路径
             output_folder: 输出脚本文件夹路径
             engine: 指定的引擎（可选）
-            use_gbk_encoding: 是否使用GBK编码注入（cp932）
+            encoding: 指定的文件编码（可选）
+            patched_encoding: 指定的注入编码（可选）
             sjis_replacement: 是否启用SJIS替换模式
             sjis_replace_chars: SJIS替换字符
             output_callback: 实时输出回调函数
@@ -344,7 +371,7 @@ class MsgToolProcessor:
             try:
                 result = self.inject_text(
                     script_folder, json_folder, output_folder,
-                    engine, use_gbk_encoding, sjis_replacement,
+                    engine, encoding, patched_encoding, sjis_replacement,
                     sjis_replace_chars, output_callback
                 )
                 if completion_callback:
