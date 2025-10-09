@@ -296,7 +296,7 @@ class MsgToolTab:
     def _open_msgtool_link(self, event):
         """打开msg-tool链接"""
         try:
-            webbrowser.open("https://github.com/msg-tool/msg-tool")
+            webbrowser.open("https://github.com/lifegpc/msg-tool")
         except Exception:
             pass
     
